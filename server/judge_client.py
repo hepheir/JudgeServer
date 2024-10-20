@@ -60,9 +60,13 @@ class JudgeClient(object):
     def _compare_output(self, test_case_file_id, user_output_file):
         with open(user_output_file, "rb") as f:
             content = f.read()
-        output_md5 = hashlib.md5(content.rstrip()).hexdigest()
+        output_md5 = hashlib.md5(self._remove_eol_whitespace(content)).hexdigest()
         result = output_md5 == self._get_test_case_file_info(test_case_file_id)["stripped_output_md5"]
         return output_md5, result
+
+    def _remove_eol_whitespace(self, content: bytes) -> bytes:
+        # removes all trailing whitespaces for each line.
+        return os.linesep.join([line.rstrip() for line in content.decode().splitlines()]).encode()
 
     def _spj(self, in_file_path, user_out_file_path):
         os.chown(self._submission_dir, SPJ_USER_UID, 0)
